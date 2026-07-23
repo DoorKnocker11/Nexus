@@ -33,9 +33,18 @@ The app uses in-app view state (no client-side routing), so no `_redirects` file
 
 ### Roster & Character Select
 - Create / edit / delete characters, each with a name, a square thumbnail (auto-cropped) and a full-body portrait (aspect ratio preserved). Upload via file picker or drag-and-drop; upload one image and the other is derived automatically.
-- Fighting-game select screen: hover/selection portrait preview, adjustable panel size and column count (⚙), drag panels to reorder the roster, scales to 100+ characters.
+- Fighting-game select screen with **dual previews**: Player 1's portrait preview on the left, Player 2's on the right, roster grid between them. The side that's currently picking follows your hover; the other side stays locked to its pick. Adjustable panel size and column count (⚙), drag panels to reorder the roster, scales to 100+ characters.
+- **Team colors**: pick each side's color from an 8-color preset palette or a custom color picker (in the ⚙ menu). The color themes that side's preview, slot frames, lineup tracker, VS screen and victory highlights, and persists.
 - Team formats from 1v1 to 8v8, with per-slot picking, "random this slot" and "random all".
-- VS screen with facing portraits — click a side to declare the winner, with a victory animation. Match history is recorded and can be viewed/cleared in the HISTORY tab.
+- 1v1: VS screen with facing portraits — click a side to declare the winner, with a victory animation.
+- **2v2–8v8 run as winner-stays elimination battles** (crew battle style): drag your team slots to set the lineup order, then the battle plays out as sequential 1v1 bouts — the winner stays on, the loser is eliminated, until one team is wiped out. Side trackers show both lineups with eliminated fighters crossed out and the current streak holder highlighted ("3 KOs"), with an undo-bout button and a bout-by-bout results summary at the end.
+- All completed fights are recorded to the HISTORY tab (elimination battles include the full bout log).
+
+### Character Database
+- The DATABASE tab shows lifetime stats for every fighter, aggregated across all modes: times played, wins, losses, win rate, and share of all appearances. Sortable columns, search filter, and a total-completed-matches counter across the whole app.
+- Click a fighter for their portrait plus a per-mode breakdown (versus / team battle / tournament).
+- Stats update automatically whenever a winner is declared anywhere (only completed matches count; abandoned battles don't). In old-style team results every team member gets credit; in elimination battles wins/losses are tracked per individual bout. Tournament byes never count.
+- Stats persist in IndexedDB, survive history clearing and tournament deletion, and are backfilled once from any pre-existing match history. "Reset all stats" (with confirmation) lives on the Database page.
 
 ### Tournaments
 - Up to 200 contestants drawn from your roster (multi-select, **Add all**, **Random N**).
@@ -56,15 +65,17 @@ The app uses in-app view state (no client-side routing), so no `_redirects` file
 ```
 src/
   lib/
-    db.js         IndexedDB wrapper (characters, history, tournaments, settings)
+    db.js         IndexedDB wrapper (characters, history, tournaments, settings, stats)
     images.js     Thumbnail auto-crop + portrait downscaling
     bracket.js    Tournament engine (generation, byes, series scoring, resets, standings)
+    stats.js      Lifetime stats aggregation (events, backfill, totals)
+    colors.js     Team color presets + helpers
   store.jsx       App-wide state + persistence + object-URL cache for images
   components/
     RosterManager.jsx / CharacterEditor.jsx / ImageDrop.jsx
     SelectScreen.jsx
-    VsStage.jsx / VersusScreen.jsx
-    MatchHistory.jsx
+    VsStage.jsx / VersusScreen.jsx / TeamBattleScreen.jsx
+    MatchHistory.jsx / CharacterDatabase.jsx
     TournamentList.jsx / TournamentCreate.jsx / TournamentView.jsx
     BracketView.jsx / RoundRobinTable.jsx / MatchModal.jsx
 ```

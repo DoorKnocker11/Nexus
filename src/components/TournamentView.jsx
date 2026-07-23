@@ -4,11 +4,12 @@ import BracketView from './BracketView.jsx'
 import RoundRobinTable from './RoundRobinTable.jsx'
 import MatchModal from './MatchModal.jsx'
 import * as bracket from '../lib/bracket.js'
+import { tournamentEvent } from '../lib/stats.js'
 
 const FORMAT_LABELS = { single: 'Single Elimination', double: 'Double Elimination', rr: 'Round Robin' }
 
 export default function TournamentView({ tournament, onBack }) {
-  const { characters, urlsFor, saveTournament } = useStore()
+  const { characters, urlsFor, saveTournament, recordResults, eraseResults } = useStore()
   const t = tournament
   const [openMatchId, setOpenMatchId] = useState(null)
 
@@ -17,6 +18,24 @@ export default function TournamentView({ tournament, onBack }) {
   const mutate = (fn) => {
     const copy = structuredClone(t)
     fn(copy)
+    // Feed the stats database: diff manually-decided matches before/after.
+    const before = new Map(t.matches.map((m) => [m.id, m]))
+    const applied = [], erased = []
+    for (const m of copy.matches) {
+      const b = before.get(m.id)
+      if (!b) continue
+      const was = b.winner !== null && !b.auto && !b.voided
+      const is = m.winner !== null && !m.auto && !m.voided
+      if (!was && is) {
+        const ev = tournamentEvent(copy, m)
+        if (ev) applied.push(ev)
+      } else if (was && !is) {
+        const ev = tournamentEvent(t, b)
+        if (ev) erased.push(ev)
+      }
+    }
+    if (applied.length) recordResults(applied)
+    if (erased.length) eraseResults(erased)
     saveTournament(copy)
   }
 

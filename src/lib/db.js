@@ -2,8 +2,8 @@
 // Stores: characters (blobs included), history, tournaments, settings.
 
 const DB_NAME = 'nexus-fg'
-const DB_VERSION = 1
-const STORES = ['characters', 'history', 'tournaments', 'settings']
+const DB_VERSION = 2
+const STORES = ['characters', 'history', 'tournaments', 'settings', 'stats']
 
 let dbPromise = null
 
