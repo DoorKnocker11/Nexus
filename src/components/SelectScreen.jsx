@@ -10,6 +10,7 @@ export default function SelectScreen({ onFight }) {
   const panelSize = settings.panelSize || 84
   const gridCols = settings.gridCols || 0
   const teamColors = settings.teamColors || DEFAULT_TEAM_COLORS
+  const pickOrder = settings.pickOrder || 'alternate'
 
   const [teams, setTeams] = useState([Array(teamSize).fill(null), Array(teamSize).fill(null)])
   const [cursor, setCursor] = useState({ side: 0, slot: 0 })
@@ -29,7 +30,13 @@ export default function SelectScreen({ onFight }) {
 
   const nextEmpty = (t, after) => {
     const order = []
-    for (let s = 0; s < 2; s++) for (let i = 0; i < teamSize; i++) order.push({ side: s, slot: i })
+    if (pickOrder === 'sequential') {
+      // fill P1's team completely, then P2's
+      for (let s = 0; s < 2; s++) for (let i = 0; i < teamSize; i++) order.push({ side: s, slot: i })
+    } else {
+      // alternating draft: P1 slot 1, P2 slot 1, P1 slot 2, …
+      for (let i = 0; i < teamSize; i++) for (let s = 0; s < 2; s++) order.push({ side: s, slot: i })
+    }
     const startIdx = after ? order.findIndex((o) => o.side === after.side && o.slot === after.slot) + 1 : 0
     for (let k = 0; k < order.length; k++) {
       const o = order[(startIdx + k) % order.length]
@@ -187,6 +194,13 @@ export default function SelectScreen({ onFight }) {
             <select value={gridCols} onChange={(e) => updateSettings({ gridCols: Number(e.target.value) })}>
               <option value={0}>Auto</option>
               {[4, 5, 6, 7, 8, 10, 12, 14, 16, 20].map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </label>
+          <label>
+            Pick order
+            <select value={pickOrder} onChange={(e) => updateSettings({ pickOrder: e.target.value })}>
+              <option value="alternate">Alternating draft (P1, P2, P1…)</option>
+              <option value="sequential">P1 team first, then P2</option>
             </select>
           </label>
           {[0, 1].map((side) => (

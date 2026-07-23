@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS = {
   panelSize: 84,
   gridCols: 0, // 0 = auto
   teamColors: DEFAULT_TEAM_COLORS,
+  pickOrder: 'alternate', // 'alternate' draft | 'sequential' (P1 team first)
 }
 
 // Object-URL cache keyed by character id + version.
